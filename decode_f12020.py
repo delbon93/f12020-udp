@@ -36,6 +36,16 @@ def extract_struct(bytestream, structname):
     return struct_data, total_bytes
 
 
+def read_string_from_stream(bytestream, datatype):
+    char_count = int(datatype.split("*")[1])
+    format_string = "<%ds" % char_count
+    string = bytestream[:char_count].decode()
+    string_length = 0
+    while string[string_length] not in "\u0000\u2026":
+        string_length += 1
+    return string[:string_length], char_count
+
+
 def extract_field(bytestream, datatype):
     """
     Extracts a single field from given bytestream. The datatype must
@@ -48,6 +58,10 @@ def extract_field(bytestream, datatype):
 
     # Determine if the field is an array and if so, how many values
     # need to be read
+
+    if "char*" in datatype:
+         return read_string_from_stream(bytestream, datatype)
+
     n = 1
     if "*" in datatype:
         split = datatype.split("*")

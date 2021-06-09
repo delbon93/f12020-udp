@@ -98,8 +98,65 @@ struct_PacketSessionData = [
     ("struct_WeatherForecastSample*20", "m_weatherForecastSamples"),
 ]
 
+# Structures for packet ID 2: Lap Data
+struct_LapData = [
+    ("float", "m_lastLapTime"),
+    ("float", "m_currentLapTime"),
+
+    ("uint16", "m_sector1TimeInMS"),
+    ("uint16", "m_sector2TimeInMS"),
+    ("float", "m_bestLapTime"),
+    ("uint8", "m_bestLapNum"),
+    ("uint16", "m_bestLapSector1TimeInMS"),
+    ("uint16", "m_bestLapSector2TimeInMS"),
+    ("uint16", "m_bestLapSector3TimeInMS"),
+    ("uint16", "m_bestOverallSector1TimeInMS"),
+    ("uint8", "m_bestOverallSector1LapNum"),
+    ("uint16", "m_bestOverallSector2TimeInMS"),
+    ("uint8", "m_bestOverallSector2LapNum"),
+    ("uint16", "m_bestOverallSector3TimeInMS"),
+    ("uint8", "m_bestOverallSector3LapNum"),
+
+    ("float", "m_lapDistance"),
+
+    ("float", "m_totalDistance"),
+
+    ("float", "m_safetyCarDelta"),
+    ("uint8", "m_carPosition"),
+    ("uint8", "m_currentLapNum"),
+    ("uint8", "m_pitStatus"),
+    ("uint8", "m_sector"),
+    ("uint8", "m_currentLapInvalid"),
+    ("uint8", "m_penalties"),
+    ("uint8", "m_gridPosition"),
+    ("uint8", "m_driverStatus"),
+
+    ("uint8", "m_resultStatus"),
+]
+
+struct_PacketLapData = [
+    ("struct_LapData*22", "m_lapData"),
+]
+
+# Structures for packet ID 9: Lobby Info
+struct_LobbyInfoData = [
+    ("uint8", "m_aiControlled"),
+    ("uint8", "m_teamId"),
+    ("uint8", "m_nationality"),
+    ("char*48", "m_name"),
+    ("uint8", "m_readyStatus"),
+]
+
+struct_PacketLobbyInfoData = [
+    ("uint8", "m_numPlayers"),
+    ("struct_LobbyInfoData*22", "m_lobbyPlayers"),
+]
+
+
 # Top level package structures are linked to their packet IDs here
 packet_ids = {
     0: "struct_PacketMotionData",
-    1: "struct_PacketSessionData"
+    1: "struct_PacketSessionData",
+    2: "struct_PacketLapData",
+    9: "struct_PacketLobbyInfoData"
 }
