@@ -303,7 +303,19 @@ packet_ids = {
     4: "struct_PacketParticipantsData",
     5: "struct_PacketCarSetupData",
     6: "struct_PacketCarTelemetryData",
-    7: "struct_Packet",
-    8: "struct_Packet",
+    7: "struct_PacketCarStatusData",
+    8: "struct_PacketFinalClassificationData",
     9: "struct_PacketLobbyInfoData",
 }
+
+class PacketIDs:
+    MOTION_DATA = 0
+    SESSION_DATA = 1
+    LAP_DATA = 2
+    EVENT_DATA = 3
+    PARTICIPANTS_DATA = 4
+    CAR_SETUP_DATA = 5
+    CAR_TELEMETRY_DATA = 6
+    CAR_STATUS_DATA = 7
+    FINAL_CLASSIFICATION_DATA = 8
+    LOBBY_INFO_DATA = 9
