@@ -138,6 +138,148 @@ struct_PacketLapData = [
     ("struct_LapData*22", "m_lapData"),
 ]
 
+# Structures for packet ID 4: Participants
+struct_ParticipantData = [
+    ("uint8", "m_aiControlled"),
+    ("uint8", "m_driverId"),
+    ("uint8", "m_teamId"),
+    ("uint8", "m_raceNumber"),
+    ("uint8", "m_nationality"),
+    ("char*48", "m_name"),
+    ("uint8", "m_yourTelemetry"),
+]
+
+struct_PacketParticipantsData = [
+    ("uint8", "m_numActiveCars"),
+    ("struct_ParticipantData*22", "m_participants"),
+]
+
+# Structures for packet ID 5: Car Setups
+struct_CarSetupData = [
+    ("uint8", "m_frontWing"),
+    ("uint8", "m_rearWing"),
+    ("uint8", "m_onThrottle"),
+    ("uint8", "m_offThrottle"),
+    ("float", "m_frontCamber"),
+    ("float", "m_rearCamber"),
+    ("float", "m_frontToe"),
+    ("float", "m_rearToe"),
+    ("uint8", "m_frontSuspension"),
+    ("uint8", "m_rearSuspension"),
+    ("uint8", "m_frontAntiRollBar"),
+    ("uint8", "m_rearAntiRollBar"),
+    ("uint8", "m_frontSuspensionHeight"),
+    ("uint8", "m_rearSuspensionHeight"),
+    ("uint8", "m_brakePressure"),
+    ("uint8", "m_brakeBias"),
+    ("float", "m_rearLeftTyrePressure"),
+    ("float", "m_rearRightTyrePressure"),
+    ("float", "m_frontLeftTyrePressure"),
+    ("float", "m_frontRightTyrePressure"),
+    ("uint8", "m_ballast"),
+    ("float", "m_fuelLoad"),
+]
+
+struct_PacketCarSetupData = [
+    ("struct_CarSetupData*22", "m_carSetups"),
+]
+
+# Structures for packet ID 6: Car Telemetry
+struct_CarTelemetryData = [
+    ("uint16", "m_speed"),
+    ("float", "m_throttle"),
+    ("float", "m_steer"),
+    ("float", "m_brake"),
+    ("uint8", "m_clutch"),
+    ("int8", "m_gear"),
+    ("uint16", "m_engineRPM"),
+    ("uint8", "m_drs"),
+    ("uint8", "m_revLightsPercent"),
+    ("uint16*4", "m_brakesTemperature"),
+    ("uint8*4", "m_tyresSurfaceTemperature"),
+    ("uint8*4", "m_tyresInnerTemperature"),
+    ("uint16", "m_engineTemperature"),
+    ("float*4", "m_tyresPressure"),
+    ("uint8*4", "m_surfaceType"),
+]
+
+struct_PacketCarTelemetryData = [
+    ("struct_CarTelemetryData*22", "m_carTelemetryData"),
+    ("uint32", "m_buttonStatus"),
+    ("uint8", "m_mfdPanelIndex"),
+    ("uint8", "m_mfdPanelIndexSecondaryPlayer"),
+    ("int8", "m_suggestedGear"),
+]
+
+# Structures for packet ID 7: Car Status
+struct_CarStatusData = [
+    ("uint8", "m_tractionControl"),
+    ("uint8", "m_antiLockBrakes"),
+    ("uint8", "m_fuelMix"),
+    ("uint8", "m_frontBrakeBias"),
+    ("uint8", "m_pitLimiterStatus"),
+    ("float", "m_fuelInTank"),
+    ("float", "m_fuelCapacity"),
+    ("float", "m_fuelRemainingLaps"),
+    ("uint16", "m_maxRPM"),
+    ("uint16", "m_idleRPM"),
+    ("uint8", "m_maxGears"),
+    ("uint8", "m_drsAllowed"),
+
+    ("uint16", "m_drsActivationDistance"),
+
+    ("uint8*4", "m_tyresWear"),
+    ("uint8", "m_actualTyreCompound"),
+
+    ("uint8", "m_visualTyreCompund"),
+
+    ("uint8", "m_tyreAgeLaps"),
+    ("uint8*4", "m_tyresDamage"),
+    ("uint8", "m_frontLeftWingDamage"),
+    ("uint8", "m_frontRightWingDamage"),
+    ("uint8", "m_rearWingDamage"),
+
+    ("uint8", "m_drsFault"),
+
+    ("uint8", "m_engineDamage"),
+    ("uint8", "m_gearBoxDamage"),
+    ("int8", "m_vehicleFiaFlags"),
+
+    ("float", "m_ersStoreEnergy"),
+    ("uint8", "m_ersDeployMode"),
+
+    ("float", "m_ersHarvestedThisLapMGUK"),
+    ("float", "m_ersHarvestedThisLapMGUK"),
+    ("float", "m_ersDeployedThisLap"),
+]
+
+struct_PacketCarStatusData = [
+    ("struct_CarStatusData*22", "m_carStatusData"),
+]
+
+# Structures for packet ID 8: Final Classification
+struct_FinalClassificationData = [
+    ("uint8", "m_position"),
+    ("uint8", "m_numLaps"),
+    ("uint8", "m_gridPosition"),
+    ("uint8", "m_points"),
+    ("uint8", "m_numPitStops"),
+    ("uint8", "m_resultStatus"),
+
+    ("float", "m_bestLapTime"),
+    ("double", "m_totalRaceTime"),
+    ("uint8", "m_penaltiesTime"),
+    ("uint8", "m_numPenalties"),
+    ("uint8", "m_numTyreStints"),
+    ("uint8*8", "m_tyreStintsActual"),
+    ("uint8*8", "m_tyreStintsVisual"),
+]
+
+struct_PacketFinalClassificationData = [
+    ("uint8", "m_numCars"),
+    ("struct_FinalClassificationData*22", "m_classificationData"),
+]
+
 # Structures for packet ID 9: Lobby Info
 struct_LobbyInfoData = [
     ("uint8", "m_aiControlled"),
@@ -158,5 +300,10 @@ packet_ids = {
     0: "struct_PacketMotionData",
     1: "struct_PacketSessionData",
     2: "struct_PacketLapData",
-    9: "struct_PacketLobbyInfoData"
+    4: "struct_PacketParticipantsData",
+    5: "struct_PacketCarSetupData",
+    6: "struct_PacketCarTelemetryData",
+    7: "struct_Packet",
+    8: "struct_Packet",
+    9: "struct_PacketLobbyInfoData",
 }

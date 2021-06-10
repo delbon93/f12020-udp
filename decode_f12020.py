@@ -13,6 +13,7 @@ datatypes = {
     "int32":  (4, "<i"),
     "int64":  (8, "<q"),
     "float":  (4, "<f"),
+    "double": (8, "<d"),
 }
 
 
