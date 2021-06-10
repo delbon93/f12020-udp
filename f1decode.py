@@ -92,10 +92,12 @@ def extract_field(bytestream, datatype):
             if n > 1:
                 # Read array of integral data
                 value = []
+                offset = 0
                 for i in range(n):
                     offset = i * word_size
-                    value.append(struct.unpack(format_string, bytestream[offset:offset+word_size]))
-                bytes_read = offset
+                    second_index = offset + word_size
+                    value.append(struct.unpack(format_string, bytestream[offset:second_index])[0])
+                bytes_read = offset + word_size
             else:
                 # Read singular integral value
                 value = struct.unpack(format_string, bytestream[:word_size])[0]
