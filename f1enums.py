@@ -379,3 +379,10 @@ class InfringementTypes:
     RETRY_PENALTY = 49
     ILLEGAL_TIME_GAIN = 50
     MANDATORY_PITSTOP = 51
+
+
+class TyreIndex:
+    REAR_LEFT = 0
+    REAR_RIGHT = 1
+    FRONT_LEFT = 2
+    FRONT_RIGHT = 3
