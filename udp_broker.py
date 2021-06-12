@@ -3,33 +3,45 @@ import json
 
 IN_PORT = 20778
 DEFAULT_PORT = 20777
+CONFIG_FILE = 'config.json'
+
+def address_to_target(address_str: str):
+    if ":" in t:
+        address = t.split(":")[0]
+        port = int(t.split(":")[1])
+    else:
+        address = t
+        port = DEFAULT_PORT
+    return (address, port)
 
 # load targets
 targets = []
 
-with open('config.json', 'r') as config_file:
+with open(CONFIG_FILE, 'r') as config_file:
     data = config_file.read()
 
-json_obj = json.loads(data)
-for t in json_obj["broker"]["targets"]:
-    if ":" in t:
-        adress = t.split(":")[0]
-        port = int(t.split(":")[1])
-    else:
-        adress = t
-        port = DEFAULT_PORT
-    targets.append((adress, port))
+json_obj: dict = json.loads(data)
 
+if not "broker" in json_obj.keys():
+    print("error: no configuration 'broker' in config file '%s'" % CONFIG_FILE)
+    exit(1)
+
+if not "targets" in json_obj["broker"].keys():
+    print("no targets defined")
+    exit(0)
+
+for t in json_obj["broker"]["targets"]:
+    targets.append(address_to_target(t))
+
+if not "source" in json_obj["broker"].keys():
+    print("no source defined, using default 'localhost:20777'")
+    source = ("localhost", 20777)
+else:
+    source = address_to_target(json_obj["broker"]["source"])
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(("127.0.0.1", IN_PORT))
+s.bind(source)
 
-# out_sockets = []
-# for target in targets:
-#     print(target)
-#     s_out = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-#     s_out.bind(target)
-#     out_sockets.append(s_out)
 out_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 while True:
@@ -39,13 +51,7 @@ while True:
         if not data:
             break
 
-        # print("rec from ", addr)
-
-        # for s_out in out_sockets:
-        #     s_out.send(data)
-
         for target in targets:
-            # print("sending to", target)
             out_socket.sendto(data, target)
 
     except Exception as error:
