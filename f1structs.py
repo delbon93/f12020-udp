@@ -231,7 +231,7 @@ struct_CarStatusData = [
     ("uint8*4", "m_tyresWear"),
     ("uint8", "m_actualTyreCompound"),
 
-    ("uint8", "m_visualTyreCompund"),
+    ("uint8", "m_visualTyreCompound"),
 
     ("uint8", "m_tyreAgeLaps"),
     ("uint8*4", "m_tyresDamage"),

@@ -1,59 +1,49 @@
 import socket
-import json
+import f1config
 
 IN_PORT = 20778
 DEFAULT_PORT = 20777
-CONFIG_FILE = 'config.json'
 
 def address_to_target(address_str: str):
-    if ":" in t:
-        address = t.split(":")[0]
-        port = int(t.split(":")[1])
+    if ":" in address_str:
+        address = address_str.split(":")[0]
+        port = int(address_str.split(":")[1])
     else:
-        address = t
+        address = address_str
         port = DEFAULT_PORT
     return (address, port)
 
 # load targets
 targets = []
+target_strings = f1config.CONFIG.get("/broker/targets")
 
-with open(CONFIG_FILE, 'r') as config_file:
-    data = config_file.read()
-
-json_obj: dict = json.loads(data)
-
-if not "broker" in json_obj.keys():
-    print("error: no configuration 'broker' in config file '%s'" % CONFIG_FILE)
-    exit(1)
-
-if not "targets" in json_obj["broker"].keys():
+if not target_strings:
     print("no targets defined")
     exit(0)
 
-for t in json_obj["broker"]["targets"]:
+for t in target_strings:
     targets.append(address_to_target(t))
 
-if not "source" in json_obj["broker"].keys():
-    print("no source defined, using default 'localhost:20777'")
-    source = ("localhost", 20777)
-else:
-    source = address_to_target(json_obj["broker"]["source"])
+source = f1config.CONFIG.get("/broker/source", "localhost:20777")
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(source)
+in_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+in_socket.bind(source)
 
 out_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-while True:
-    try:
+try:
+    while True:
         # Read UDP packet
-        data, addr = s.recvfrom(4096)
+        data, addr = in_socket.recvfrom(4096)
         if not data:
             break
 
         for target in targets:
             out_socket.sendto(data, target)
 
-    except Exception as error:
-        print(error.with_traceback())
-        exit(1)
+except Exception as error:
+    print(error)
+    exit(1)
+finally:
+    in_socket.close()
+    out_socket.close()

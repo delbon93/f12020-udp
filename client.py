@@ -1,22 +1,25 @@
-import socket
-import f1decode
-from f1enums import PacketIDs
-import math
-import json
-from f1session import F1SessionManager, F1Session, session_query
-import threading
-from time import sleep
 import os
+import threading
+import socket
+import math
+import f1decode
+import f1database
+import time
+
+from f1enums import PacketIDs
+from f1session import F1SessionManager, F1Session, session_query
 
 PORT = 20777
+CHECK_INACTIVE_SESSIONS_INTERVALL = 1
 
+upd_thread_running = True
 session_manager = F1SessionManager()
 
 def udp_loop():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.bind(("localhost", PORT))
 
-    while True:
+    while upd_thread_running:
         try:
             # Read UDP packet
             data, addr = s.recvfrom(4096)
@@ -35,26 +38,53 @@ def udp_loop():
 
 udp_thread = threading.Thread(target=udp_loop)
 udp_thread.start()
-        
+
+pending_transactions = []
+
+def inactive_session_handler(session: F1Session):
+    print("Session %d now inactive" % session.session_uid)
+
+    if not session.has_best_lap_data():
+        return
+
+    track_id = session_query(session, 0, PacketIDs.SESSION_DATA, "content/m_trackId")
+    session_type = session_query(session, 0, PacketIDs.SESSION_DATA, "content/m_sessionType")
+
+    players = session._players
+    for player_id in players.keys():
+        car_index = players[player_id]['carIndex']
+        player_name = players[player_id]['data']['m_name']
+        team_id = players[player_id]['data']['m_teamId']
+        tyre_compound = session_query(session, car_index, PacketIDs.CAR_STATUS_DATA,
+            "content/m_carStatusData[@]/m_visualTyreCompound"
+        )
+        best_lap_time = session_query(session, car_index, PacketIDs.LAP_DATA,
+            "content/m_lapData[@]/m_bestLapTime"
+        )
+
+        pending_transactions.append(f1database.generate_best_lap_data_sql_statement(
+            0, player_name, track_id, session_type,
+            team_id, tyre_compound, best_lap_time
+        ))
+
+        lap = session_query(session, car_index, PacketIDs.LAP_DATA,
+            "content/m_lapData[@]/m_bestLapNum"
+        )
+        print("lap: %d" % lap)
+        print("[Pending Database Transactions]")
+        for ta in pending_transactions:
+            print(" >", ta)
+
+
+
 while True:
     try:
-        sleep(1)
-        os.system('clear')
-        print("\n --<[ Sessions ]>--")
-        for session_uid in session_manager.sessions.keys():
-            session: F1Session = session_manager.sessions[session_uid]
-            active_str = "inactive"
-            if session.is_active():
-                active_str = "active"
-            print("  > %d: %s session" % (session_uid, active_str))
+        time.sleep(CHECK_INACTIVE_SESSIONS_INTERVALL)
+        session_manager.handle_inactive_sessions(inactive_session_handler, pop_on_inactive=True)
 
-            if session.is_active():
-                # player_data = session.get_participants(players_only=True)
-                players = session._players
-                for driver_id in players.keys():
-                    player_data = players[driver_id]
-                    print("      Player '%s':" % player_data["data"]["m_name"], player_data)
+
     except Exception as err:
         print(err)
+        upd_thread_running = False
         udp_thread.join()
         exit(1)

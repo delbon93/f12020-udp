@@ -1,4 +1,5 @@
 import struct
+import math
 from f1structs import *
 
 # Supported C datatypes and their corresponding format string
@@ -128,3 +129,11 @@ def decode_packet(bytestream):
         "header": header,
         "content": packet_data
     }
+
+
+def format_lap_time(lap_time_seconds: float) -> str:
+    return "%s:%s.%s" % (
+        str(int(lap_time_seconds / 60)).rjust(2, '0'),
+        str(int(lap_time_seconds % 60)).rjust(2, '0'),
+        str(int(1000 * (lap_time_seconds - math.floor(lap_time_seconds)))).rjust(3, '0')
+    )

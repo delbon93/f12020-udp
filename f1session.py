@@ -14,11 +14,23 @@ class F1SessionManager:
             print("Registered session '%d'" % session_uid)
         self.sessions[session_uid].receive_packet(packet)
 
+    
+    def handle_inactive_sessions(self, handler, pop_on_inactive=False) -> list:
+        to_pop = []
+        for uid in self.sessions.keys():
+            if not self.sessions[uid].is_active():
+                handler(self.sessions[uid])
+                if pop_on_inactive:
+                    to_pop.append(uid)
+        
+        for uid in to_pop:
+            self.sessions.pop(uid)
+
 
 
 class F1Session:
     LOBBY_PACKET_TIMEOUT = 3.0
-    SESSION_ACTIVE_TIMEOUT = 10.0
+    SESSION_ACTIVE_TIMEOUT = 5.0
 
     def __init__(self):
         self.motion_data = {}
@@ -61,6 +73,13 @@ class F1Session:
             return False
         return (time.time() - self._last_packet_received_time) < F1Session.SESSION_ACTIVE_TIMEOUT
 
+
+    def has_best_lap_data(self) -> bool:
+        if len(self.session_data) == 0: return False
+        if len(self.car_status_data) == 0: return False
+        if len(self.lap_data) == 0: return False
+        return True
+
     
     def get_participants(self, players_only=False) -> list:
         if len(self.participants_data) == 0:
@@ -73,11 +92,6 @@ class F1Session:
                 active_players.append(p_data)
         
         return active_players
-
-    
-    def get_best_player_lap_times(self) -> list:
-        active_players = self.get_participants(players_only=True)
-
 
     
     def receive_packet(self, packet) -> None:

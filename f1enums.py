@@ -386,3 +386,33 @@ class TyreIndex:
     REAR_RIGHT = 1
     FRONT_LEFT = 2
     FRONT_RIGHT = 3
+
+class ActualTyreCompound:
+    F1_MODERN_C5        = 16
+    F1_MODERN_C4        = 17
+    F1_MODERN_C3        = 18
+    F1_MODERN_C2        = 19
+    F1_MODERN_C1        = 20
+    F1_MODERN_INTER     = 7
+    F1_MODERN_WET       = 8
+    F1_CLASSIC_DRY      = 9
+    F1_CLASSIC_WET      = 10
+    F2_SUPER_SOFT       = 11
+    F2_SOFT             = 12
+    F2_MEDIUM           = 13
+    F2_HARD             = 14
+    F2_WET              = 15
+
+class VisualTyreCompound:
+    F1_SOFT             = 16
+    F1_MEDIUM           = 17
+    F1_HARD             = 18
+    F1_INTER            = 7
+    F1_WET              = 8
+    F1_CLASSIC_DRY      = 9
+    F1_CLASSIC_WET      = 10
+    F2_SUPER_SOFT       = 11
+    F2_SOFT             = 12
+    F2_MEDIUM           = 13
+    F2_HARD             = 14
+    F2_WET              = 15
