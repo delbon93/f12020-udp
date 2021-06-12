@@ -75,6 +75,7 @@ class F1Session:
         
         self.total_packets_reveived += 1
         self._id_to_packet_list[packet_id][player_car_id] = packet
+        self._last_packet_received_time = time.time()
 
 
 
