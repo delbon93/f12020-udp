@@ -4,44 +4,47 @@ from f1enums import PacketIDs
 import math
 import json
 from f1session import F1SessionManager, F1Session, session_query
+import threading
+from time import sleep
+import os
 
 PORT = 20777
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(("localhost", PORT))
-
 session_manager = F1SessionManager()
 
+def udp_loop():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind(("localhost", PORT))
+
+    while True:
+        # Read UDP packet
+        data, addr = s.recvfrom(4096)
+        if not data:
+            break
+
+        # Decode the packet
+        packet = f1decode.decode_packet(bytearray(data))
+
+        # Session manager dispatches packet to corresponding session
+        session_manager.dispatch_packet(packet)
+
+
+udp_thread = threading.Thread(target=udp_loop)
+udp_thread.start()
+        
 while True:
-    # Read UDP packet
-    data, addr = s.recvfrom(4096)
-    if not data:
-        break
-
-    data = bytearray(data)
-    
-    # Decode the packet
-    packet = f1decode.decode_packet(data)
-
-    session_manager.dispatch_packet(packet)
-
-    # session_uid = packet["header"]["m_sessionUID"]
-
-    # if packet["header"]["m_packetId"] != PacketIDs.CAR_TELEMETRY_DATA:
-    #     continue
-
-    # player_name = session_query(session_manager.sessions[session_uid], 0, 
-    #     PacketIDs.CAR_TELEMETRY_DATA, 
-    #     "content/m_carTelemetryData[@]/m_surfaceType"
-    # )
-    # print(player_name)
-
+    sleep(1)
+    os.system('clear')
     print("\n --<[ Sessions ]>--")
     for session_uid in session_manager.sessions.keys():
-        #print("session %d: %d total packets" % (session, session_manager.sessions[session].total_packets_reveived))
         session: F1Session = session_manager.sessions[session_uid]
         active_str = "inactive"
-        if session.is_session_active():
+        if session.is_active():
             active_str = "active"
         print("  > %d: %s session" % (session_uid, active_str))
+
+        if session.is_active():
+            player_data = session.get_participants(players_only=True)
+            for player in player_data:
+                print("      Player '%s':" % player["m_name"], player)
     

@@ -1,4 +1,5 @@
 import time
+from f1enums import PacketIDs
 
 class F1SessionManager:
 
@@ -44,6 +45,7 @@ class F1Session:
         self.session_uid = None
         self.num_players = 0
         self.total_packets_reveived = 0
+        self._players = {}
 
 
     def is_in_lobby(self) -> bool:
@@ -54,10 +56,24 @@ class F1Session:
         return in_lobby
     
 
-    def is_session_active(self) -> bool:
+    def is_active(self) -> bool:
         if self._last_packet_received_time == None:
             return False
         return (time.time() - self._last_packet_received_time) < F1Session.SESSION_ACTIVE_TIMEOUT
+
+    
+    def get_participants(self, players_only=False) -> list:
+        if len(self.participants_data) == 0:
+            return []
+        
+        active_players = []
+        participants_packet = list(self.participants_data.values())[0]
+        for p_data in participants_packet["content"]["m_participants"]:
+            if (p_data["m_aiControlled"] == 0 or not players_only) and p_data["m_nationality"] > 0:
+                active_players.append(p_data)
+        
+        return active_players
+
 
     
     def receive_packet(self, packet) -> None:
@@ -72,9 +88,10 @@ class F1Session:
         if player_car_id in self._id_to_packet_list[packet_id].keys():
             if self._id_to_packet_list[packet_id][player_car_id]["header"]["m_frameIdentifier"] > frame_id:
                 return
+
+        self._id_to_packet_list[packet_id][player_car_id] = packet
         
         self.total_packets_reveived += 1
-        self._id_to_packet_list[packet_id][player_car_id] = packet
         self._last_packet_received_time = time.time()
 
 
