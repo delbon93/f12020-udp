@@ -55,5 +55,5 @@ while True:
             out_socket.sendto(data, target)
 
     except Exception as error:
-        print(error.with_traceback())
+        print(error)
         exit(1)
