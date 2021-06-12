@@ -74,6 +74,10 @@ class F1Session:
         
         return active_players
 
+    
+    def get_best_player_lap_times(self) -> list:
+        active_players = self.get_participants(players_only=True)
+
 
     
     def receive_packet(self, packet) -> None:
@@ -90,6 +94,15 @@ class F1Session:
                 return
 
         self._id_to_packet_list[packet_id][player_car_id] = packet
+
+        if packet["header"]["m_packetId"] == PacketIDs.PARTICIPANTS_DATA:
+            player_car_id = packet["header"]["m_playerCarIndex"]
+            player_data = packet["content"]["m_participants"]
+            player_driver_id = player_data[player_car_id]["m_driverId"]
+            self._players[player_driver_id] = {
+                "data": player_data[player_car_id],
+                "carIndex": player_car_id,
+            }
         
         self.total_packets_reveived += 1
         self._last_packet_received_time = time.time()

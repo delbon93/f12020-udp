@@ -17,34 +17,44 @@ def udp_loop():
     s.bind(("localhost", PORT))
 
     while True:
-        # Read UDP packet
-        data, addr = s.recvfrom(4096)
-        if not data:
-            break
+        try:
+            # Read UDP packet
+            data, addr = s.recvfrom(4096)
+            if not data:
+                break
 
-        # Decode the packet
-        packet = f1decode.decode_packet(bytearray(data))
+            # Decode the packet
+            packet = f1decode.decode_packet(bytearray(data))
 
-        # Session manager dispatches packet to corresponding session
-        session_manager.dispatch_packet(packet)
+            # Session manager dispatches packet to corresponding session
+            session_manager.dispatch_packet(packet)
+        except Exception as err:
+            print(err)
+            os._exit(1)
 
 
 udp_thread = threading.Thread(target=udp_loop)
 udp_thread.start()
         
 while True:
-    sleep(1)
-    os.system('clear')
-    print("\n --<[ Sessions ]>--")
-    for session_uid in session_manager.sessions.keys():
-        session: F1Session = session_manager.sessions[session_uid]
-        active_str = "inactive"
-        if session.is_active():
-            active_str = "active"
-        print("  > %d: %s session" % (session_uid, active_str))
+    try:
+        sleep(1)
+        os.system('clear')
+        print("\n --<[ Sessions ]>--")
+        for session_uid in session_manager.sessions.keys():
+            session: F1Session = session_manager.sessions[session_uid]
+            active_str = "inactive"
+            if session.is_active():
+                active_str = "active"
+            print("  > %d: %s session" % (session_uid, active_str))
 
-        if session.is_active():
-            player_data = session.get_participants(players_only=True)
-            for player in player_data:
-                print("      Player '%s':" % player["m_name"], player)
-    
+            if session.is_active():
+                # player_data = session.get_participants(players_only=True)
+                players = session._players
+                for driver_id in players.keys():
+                    player_data = players[driver_id]
+                    print("      Player '%s':" % player_data["data"]["m_name"], player_data)
+    except Exception as err:
+        print(err)
+        udp_thread.join()
+        exit(1)
