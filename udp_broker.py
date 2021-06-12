@@ -5,7 +5,7 @@ DEFAULT_PORT = 20777
 
 targets = [
     ('127.0.0.1',      DEFAULT_PORT),
-    ('81.169.202.83',  DEFAULT_PORT),
+    ('dreamcraft.digital',  DEFAULT_PORT),
 ]
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
