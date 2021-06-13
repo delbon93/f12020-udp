@@ -41,3 +41,11 @@ class F1Config:
 # Global config file object
 CONFIG = F1Config()
 CONFIG._load_from_file("config.json")
+
+config_files = CONFIG.get("/configFiles")
+if type(config_files) is list:
+    for config_file in config_files:
+        CONFIG._load_from_file(config_file)
+del(config_files)
+
+CONFIG._load_from_file("private_config.json")

@@ -1,0 +1,13 @@
+{
+    "configFiles": [
+        "private_config.json"
+    ],
+    "sessions": {
+        "lobbyPacketTimeout": 3.0,
+        "sessionActiveTimeout": 5.0
+    },
+    "client": {
+        "udpPort": 20777,
+        "checkInactiveSessionsIntervall": 1.0
+    }
+}
