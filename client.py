@@ -64,14 +64,13 @@ def inactive_session_handler(session: F1Session):
         )
 
         pending_transactions.append(f1database.generate_best_lap_data_sql_statement(
-            0, player_name, track_id, session_type,
+            player_name, track_id, session_type,
             team_id, tyre_compound, best_lap_time
         ))
 
         lap = session_query(session, car_index, PacketIDs.LAP_DATA,
             "content/m_lapData[@]/m_bestLapNum"
         )
-        print("lap: %d" % lap)
         print("[Pending Database Transactions]")
         for ta in pending_transactions:
             print(" >", ta)
