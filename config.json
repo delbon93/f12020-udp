@@ -9,5 +9,19 @@
     "client": {
         "udpPort": 20777,
         "checkInactiveSessionsIntervall": 1.0
+    },
+    "broker": {
+        "source": "localhost",
+        "targets": [
+            
+        ]
+    },
+    "db": {
+        "connect": {
+            "host": "",
+            "dbname": "",
+            "user": "",
+            "password": ""
+        }
     }
 }
