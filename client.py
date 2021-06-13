@@ -4,13 +4,14 @@ import socket
 import math
 import f1decode
 import f1database
+import f1config
 import time
 
 from f1enums import PacketIDs
 from f1session import F1SessionManager, F1Session, session_query
 
-PORT = 20777
-CHECK_INACTIVE_SESSIONS_INTERVALL = 1
+PORT = f1config.CONFIG.get("/client/udpPort", 20777)
+CHECK_INACTIVE_SESSIONS_INTERVALL = f1config.CONFIG.get("/client/checkInactiveSessionsIntervall", 1.0)
 
 upd_thread_running = True
 session_manager = F1SessionManager()
@@ -74,7 +75,6 @@ def inactive_session_handler(session: F1Session):
         print("[Pending Database Transactions]")
         for ta in pending_transactions:
             print(" >", ta)
-
 
 
 while True:
