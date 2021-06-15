@@ -27,7 +27,7 @@ for t in target_strings:
 source = config.CONFIG.get("/broker/source", "localhost:20777")
 
 in_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-in_socket.bind(source)
+in_socket.bind(address_to_target(source))
 
 out_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
