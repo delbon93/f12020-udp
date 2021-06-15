@@ -8,8 +8,8 @@
     },
     "client": {
         "udpPort": 20777,
-        "checkInactiveSessionsIntervall": 1.0,
-        "databaseTransactionIntervall": 10.0
+        "checkingInterval": 1.0,
+        "stdout": true
     },
     "broker": {
         "source": "localhost",

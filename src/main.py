@@ -4,8 +4,11 @@ import f1decode
 import f1session
 import os
 import json
+import config
 from f1enums import PacketIDs
 
+CHECKING_INTERVAL = config.CONFIG.get("/client/checkingInterval", 1.0)
+USE_STDOUT = config.CONFIG.get("/client/stdout", False)
 session_manager = f1session.F1SessionManager()
 current_best_times = {}
 
@@ -53,9 +56,10 @@ while True:
                 register_time(session.session_uid, player_name, lap_time,
                     (player_name, track_id, session_type, team_id, tyre_id, lap_time))
     
-    os.system('clear')
-    print("current_best_times =", json.dumps(current_best_times, indent=2))
-    time.sleep(0.5)
+    if USE_STDOUT:
+        os.system('clear')
+        print("current_best_times =", json.dumps(current_best_times, indent=2))
+    time.sleep(CHECKING_INTERVAL)
 
 
 udp_thread.stop()
