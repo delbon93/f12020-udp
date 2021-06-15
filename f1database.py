@@ -2,8 +2,9 @@ import f1config
 import psycopg2 as dbwrapper
 
 BEST_LAP_STATEMENT_TEMPLATE = """
-        INSERT INTO best_lap_times (player, trackid, sessiontypeid, teamid, tireid, time) 
-        VALUES ('%s', %d, %d, %d, %d, %f);"""
+INSERT INTO best_lap_times (player, trackid, sessiontypeid, teamid, tireid, time) 
+VALUES ('%s', %d, %d, %d, %d, %f);
+""".lstrip().rstrip().replace("\n", " ")
 
 
 def connect():
