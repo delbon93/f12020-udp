@@ -12,7 +12,6 @@ class F1SessionManager:
         session_uid = packet["header"]["m_sessionUID"]
         if not session_uid in self.sessions.keys():
             self.sessions[session_uid] = F1Session()
-            print("Registered session '%d'" % session_uid)
         self.sessions[session_uid].receive_packet(packet)
 
     
@@ -125,7 +124,16 @@ class F1Session:
 
 
 def session_query(session: F1Session, car_id: int, packet_id: int, query: str):
+    if "+" in query:
+        results = []
+        for player in session._players.values():
+            player_query = query.replace("+", str(player["carIndex"]))
+            results.append((player, session_query(session, car_id, packet_id, player_query)))
+        return results
+
     query_elements = query.split("/")
+    if not car_id in session._id_to_packet_list[packet_id]:
+        return None
     packet = session._id_to_packet_list[packet_id][car_id]
     current_element = packet
     last_query_element = "<root>"
@@ -133,7 +141,6 @@ def session_query(session: F1Session, car_id: int, packet_id: int, query: str):
         #print("--------\n", current_element, "----------\n")
         curr_query_element = query_elements.pop(0)
         
-        # replace placeholders
         curr_query_element = curr_query_element.replace("@", "%d" % car_id)
 
         if "[" in curr_query_element:
