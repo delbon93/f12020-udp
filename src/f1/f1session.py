@@ -1,5 +1,5 @@
 import time
-import f1config
+import config
 from f1enums import PacketIDs
 
 class F1SessionManager:
@@ -30,8 +30,8 @@ class F1SessionManager:
 
 
 class F1Session:
-    LOBBY_PACKET_TIMEOUT = f1config.CONFIG.get("/sessions/lobbyPacketTimeout", 3.0)
-    SESSION_ACTIVE_TIMEOUT = f1config.CONFIG.get("/sessions/sessionActiveTimeout", 10.0)
+    LOBBY_PACKET_TIMEOUT = config.CONFIG.get("/sessions/lobbyPacketTimeout", 3.0)
+    SESSION_ACTIVE_TIMEOUT = config.CONFIG.get("/sessions/sessionActiveTimeout", 10.0)
 
     def __init__(self):
         self.motion_data = {}

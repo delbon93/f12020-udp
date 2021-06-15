@@ -1,5 +1,5 @@
 import socket
-import f1config
+import config
 
 IN_PORT = 20778
 DEFAULT_PORT = 20777
@@ -15,7 +15,7 @@ def address_to_target(address_str: str):
 
 # load targets
 targets = []
-target_strings = f1config.CONFIG.get("/broker/targets")
+target_strings = config.CONFIG.get("/broker/targets")
 
 if not target_strings:
     print("no targets defined")
@@ -24,7 +24,7 @@ if not target_strings:
 for t in target_strings:
     targets.append(address_to_target(t))
 
-source = f1config.CONFIG.get("/broker/source", "localhost:20777")
+source = config.CONFIG.get("/broker/source", "localhost:20777")
 
 in_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 in_socket.bind(source)

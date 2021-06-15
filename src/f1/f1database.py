@@ -1,4 +1,4 @@
-import f1config
+import config
 import psycopg2 as dbwrapper
 
 BEST_LAP_STATEMENT_TEMPLATE = """
@@ -13,14 +13,14 @@ def connect():
     connection object on success
     """
 
-    host = f1config.CONFIG.get("/db/connect/host", "localhost")
-    dbname = f1config.CONFIG.get("/db/connect/dbname")
+    host = config.config.get("/db/connect/host", "localhost")
+    dbname = config.config.get("/db/connect/dbname")
     if not dbname:
         raise ConnectionError("Can't connect to database: no database name defined!")
-    username = f1config.CONFIG.get("/db/connect/user")
+    username = config.config.get("/db/connect/user")
     if not username:
         raise ConnectionError("Can't connect to database: no user name defined!")
-    password = f1config.CONFIG.get("/db/connect/password", "")
+    password = config.config.get("/db/connect/password", "")
 
     conn = dbwrapper.connect(
         host=host,

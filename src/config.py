@@ -1,6 +1,6 @@
 import json
 
-class F1Config:
+class Config:
 
     def __init__(self):
         self._values = {}
@@ -39,7 +39,7 @@ class F1Config:
 
 
 # Global config file object
-CONFIG = F1Config()
+CONFIG = Config()
 CONFIG._load_from_file("config.json")
 
 config_files = CONFIG.get("/configFiles")

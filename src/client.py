@@ -4,16 +4,16 @@ import socket
 import math
 import f1decode
 import f1database
-import f1config
+import config
 import time
 import traceback
 
 from f1enums import PacketIDs
 from f1session import F1SessionManager, F1Session, session_query
 
-PORT = f1config.CONFIG.get("/client/udpPort", 20777)
-CHECK_INACTIVE_SESSIONS_INTERVALL = f1config.CONFIG.get("/client/checkInactiveSessionsIntervall", 1.0)
-DATABASE_TRANSACTION_INTERVALL = f1config.CONFIG.get("/client/databaseTransactionIntervall", 60.0)
+PORT = config.CONFIG.get("/client/udpPort", 20777)
+CHECK_INACTIVE_SESSIONS_INTERVALL = config.CONFIG.get("/client/checkInactiveSessionsIntervall", 1.0)
+DATABASE_TRANSACTION_INTERVALL = config.CONFIG.get("/client/databaseTransactionIntervall", 60.0)
 
 udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 udp_socket.settimeout(1.0)
