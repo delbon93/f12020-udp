@@ -132,6 +132,11 @@ def decode_packet(bytestream):
 
 
 def format_lap_time(lap_time_seconds: float) -> str:
+    """
+    Converts times from seconds in floating point format to strings that
+    represent times like in-game, e.g. 86.12345 -> '01:26.123'
+    """
+
     return "%s:%s.%s" % (
         str(int(lap_time_seconds / 60)).rjust(2, '0'),
         str(int(lap_time_seconds % 60)).rjust(2, '0'),

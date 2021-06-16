@@ -13,6 +13,11 @@ session_manager = f1session.F1SessionManager()
 current_best_times = {}
 
 def register_time(session_uid, player_name, last_time, data):
+    """
+    Register a current 'last lap time' if it is faster than the previous best time.
+    Times are registered per player, and players are registered per session.
+    """
+
     global current_best_times
     if not session_uid in current_best_times.keys():
         current_best_times[session_uid] = {}
@@ -25,6 +30,10 @@ def register_time(session_uid, player_name, last_time, data):
 
 
 def callback(packet):
+    """
+    Packet handler for the UDP thread
+    """
+    
     session_manager.dispatch_packet(packet)
 
 
@@ -32,6 +41,9 @@ udp_thread = client.UDPThread(20777, packet_decoder=f1decode.decode_packet, pack
 udp_thread.start()
 
 while True:
+    # Iterate over all sessions and query last lap times for each player. These times and associated
+    # data is then inserted into current_best_times if that player beat their prevous best time in
+    # their respective session
     for session in session_manager.sessions.values():
         current_times = f1session.session_query(session, 0, PacketIDs.LAP_DATA,
             "content/m_lapData[+]/m_lastLapTime")
@@ -52,10 +64,13 @@ while True:
             tyre_id = f1session.session_query(session, car_id, PacketIDs.CAR_STATUS_DATA,
                 "content/m_carStatusData[@]/m_visualTyreCompound")
 
+            # If no lap has been completed yet, the last lap time will be 0. Therefore we have
+            # to check for reasonable times
             if lap_time > 10.0:
                 register_time(session.session_uid, player_name, lap_time,
                     (player_name, track_id, session_type, team_id, tyre_id, lap_time))
     
+    # If stdout is enabled, print the current best times data structure
     if USE_STDOUT:
         os.system('clear')
         print("current_best_times =", json.dumps(current_best_times, indent=2))

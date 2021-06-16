@@ -1,6 +1,12 @@
 import json
 
 class Config:
+    """
+    Reads a JSON file and stores its data. Specific values can be retreived via
+    value paths that are structured like absolute unix file system paths, e.g.:
+        /client/port
+    
+    """
 
     def __init__(self):
         self._values = {}
@@ -42,10 +48,11 @@ class Config:
 CONFIG = Config()
 CONFIG._load_from_file("config.json")
 
+# Get additional config files from the main config file and load their values.
+# If these additional files contain the same keys as the main file, the main
+# files values will be overwritten.
 config_files = CONFIG.get("/configFiles")
 if type(config_files) is list:
     for config_file in config_files:
         CONFIG._load_from_file(config_file)
 del(config_files)
-
-CONFIG._load_from_file("private_config.json")
