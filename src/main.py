@@ -45,12 +45,12 @@ while True:
     # data is then inserted into current_best_times if that player beat their prevous best time in
     # their respective session
     for session in session_manager.sessions.values():
-        current_times = f1session.session_query(session, 0, PacketIDs.LAP_DATA,
+        current_times = session.query(0, PacketIDs.LAP_DATA,
             "content/m_lapData[+]/m_lastLapTime")
 
-        track_id = f1session.session_query(session, 0, PacketIDs.SESSION_DATA,
+        track_id = session.query(0, PacketIDs.SESSION_DATA,
             "content/m_trackId")
-        session_type = f1session.session_query(session, 0, PacketIDs.SESSION_DATA,
+        session_type = session.query(0, PacketIDs.SESSION_DATA,
             "content/m_sessionType")
         
         
@@ -59,9 +59,9 @@ while True:
             car_id = current_time[0]["carIndex"]
             lap_time = current_time[1]
             lap_time_pretty = f1decode.format_lap_time(current_time[1])
-            team_id = f1session.session_query(session, car_id, PacketIDs.PARTICIPANTS_DATA,
+            team_id = session.query(car_id, PacketIDs.PARTICIPANTS_DATA,
                 "content/m_participants[@]/m_teamId")
-            tyre_id = f1session.session_query(session, car_id, PacketIDs.CAR_STATUS_DATA,
+            tyre_id = session.query(car_id, PacketIDs.CAR_STATUS_DATA,
                 "content/m_carStatusData[@]/m_visualTyreCompound")
 
             # If no lap has been completed yet, the last lap time will be 0. Therefore we have

@@ -176,74 +176,73 @@ class F1Session:
         self._last_packet_received_time = time.time()
 
 
+    def query(self, car_id: int, packet_id: int, query: str):
+        """
+        Get data from the session.
+            car_id: The query will use packets from that clients point of view (i.e. packets
+                that have been sent by them)
+            packet_id: The packet type to apply the query to
+            query: A string that describes the data to be retrieved
 
-def session_query(session: F1Session, car_id: int, packet_id: int, query: str):
-    """
-    Get data from the session.
-        car_id: The query will use packets from that clients point of view (i.e. packets
-            that have been sent by them)
-        packet_id: The packet type to apply the query to
-        query: A string that describes the data to be retrieved
+        About query strings:
+            Query strings are unix path-like: 'content/m_somePacketStructMember'
+            A packet contains a header and its content, so the query string starts with either
+            'content' or 'header', depending on the information that is to be queried.
+            After that, the path of the data that is to be queried relies on the packet structure
+            in question, for that the struct definitions in 'f1structs.py' or the official
+            specification (https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/) 
+            should be referenced.
 
-    About query strings:
-        Query strings are unix path-like: 'content/m_somePacketStructMember'
-        A packet contains a header and its content, so the query string starts with either
-        'content' or 'header', depending on the information that is to be queried.
-        After that, the path of the data that is to be queried relies on the packet structure
-        in question, for that the struct definitions in 'f1structs.py' or the official
-        specification (https://forums.codemasters.com/topic/50942-f1-2020-udp-specification/) 
-        should be referenced.
+            Arrays can be indexed as expected: 'content/m_someArray[4]/m_someValue'
+            Instead of an index, special placeholders can be used:
 
-        Arrays can be indexed as expected: 'content/m_someArray[4]/m_someValue'
-        Instead of an index, special placeholders can be used:
+                'm_someArray[@]':
+                    @ will be replaced by the given car_id
 
-            'm_someArray[@]':
-                @ will be replaced by the given car_id
+                'm_someArray[+]':
+                    + acts like a glob that evaluates to the car_ids of all human players in the
+                    session. For each player a sub-query will be created, with all occurences of
+                    the + character replaced by their respective car_id. The result of all 
+                    sub-queries are stored in a list, which will be the result of the main query
 
-            'm_someArray[+]':
-                + acts like a glob that evaluates to the car_ids of all human players in the
-                session. For each player a sub-query will be created, with all occurences of
-                the + character replaced by their respective car_id. The result of all 
-                sub-queries are stored in a list, which will be the result of the main query
+        """
 
-    """
-
-    # Create sub-queries if the + placeholder is used
-    if "+" in query:
-        results = []
-        for player in session._players.values():
-            player_query = query.replace("+", str(player["carIndex"]))
-            results.append((player, session_query(session, car_id, packet_id, player_query)))
-        return results
+        # Create sub-queries if the + placeholder is used
+        if "+" in query:
+            results = []
+            for player in self._players.values():
+                player_query = query.replace("+", str(player["carIndex"]))
+                results.append((player, self.query(car_id, packet_id, player_query)))
+            return results
 
 
-    query_elements = query.split("/")
-    if not car_id in session._id_to_packet_list[packet_id]:
-        return {"error": "No packet for car id '%d'!" % (car_id), "query": query}
+        query_elements = query.split("/")
+        if not car_id in self._id_to_packet_list[packet_id]:
+            return {"error": "No packet for car id '%d'!" % (car_id), "query": query}
 
-    packet = session._id_to_packet_list[packet_id][car_id]
-    current_element = packet
-    last_query_element = "<root>"
+        packet = self._id_to_packet_list[packet_id][car_id]
+        current_element = packet
+        last_query_element = "<root>"
 
-    while len(query_elements) > 0:
-        curr_query_element = query_elements.pop(0).replace("@", "%d" % car_id)
+        while len(query_elements) > 0:
+            curr_query_element = query_elements.pop(0).replace("@", "%d" % car_id)
 
-        # If current query element is an indexed array
-        if "[" in curr_query_element:
-            element_split = curr_query_element.split("[")
-            member_name, index = element_split[0], int(element_split[1].replace("]", ""))
-            if not member_name in current_element.keys():
-                return {"error": "No member '%s' in '%s'!" % (member_name, last_query_element), "query": query}
-            if index >= len(current_element[member_name]) or index < 0:
-                return {
-                    "error": "Index '%d' out of range for list '%s' (has %d elements)" % (index, member_name, len(current_element[member_name])), 
-                    "query": query
-                    }
-            current_element = current_element[member_name][index]
-        else:
-            current_element = current_element[curr_query_element]
+            # If current query element is an indexed array
+            if "[" in curr_query_element:
+                element_split = curr_query_element.split("[")
+                member_name, index = element_split[0], int(element_split[1].replace("]", ""))
+                if not member_name in current_element.keys():
+                    return {"error": "No member '%s' in '%s'!" % (member_name, last_query_element), "query": query}
+                if index >= len(current_element[member_name]) or index < 0:
+                    return {
+                        "error": "Index '%d' out of range for list '%s' (has %d elements)" % (index, member_name, len(current_element[member_name])), 
+                        "query": query
+                        }
+                current_element = current_element[member_name][index]
+            else:
+                current_element = current_element[curr_query_element]
 
-        last_query_element = curr_query_element
-    
-    return current_element
+            last_query_element = curr_query_element
+        
+        return current_element
         
