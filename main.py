@@ -1,14 +1,14 @@
 import client
 import time
-import f1.f1decode as f1decode
-import f1.f1session as f1session
-import f1.f1database as f1database
-import f1.f1enumstrings as f1enumstrings
+import f1decode
+import f1session
+import f1database
+import f1enumstrings
 import os
 import json
 import config
 import traceback
-from f1.f1enums import PacketIDs
+from f1enums import PacketIDs
 
 def log(msg):
     global USE_STDOUT
