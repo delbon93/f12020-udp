@@ -9,7 +9,8 @@
     "client": {
         "udpPort": 20777,
         "checkingInterval": 1.0,
-        "stdout": true
+        "stdout": true,
+        "printIncomingBestTimes": true
     },
     "broker": {
         "source": "localhost",
