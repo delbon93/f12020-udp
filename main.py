@@ -8,18 +8,12 @@ import os
 import json
 import config
 import traceback
+from logging import log
 from f1enums import PacketIDs
 
-def log(msg):
-    global USE_STDOUT
-    if not USE_STDOUT:
-        return
-    timestamp = time.strftime("[%d.%m.%y %H:%M:%S]")
-    print(timestamp, msg)
-
 CHECKING_INTERVAL = config.CONFIG.get("/client/checkingInterval", 1.0)
-USE_STDOUT = config.CONFIG.get("/client/stdout", False)
-PRINT_INCOMING_BEST_TIMES = config.CONFIG.get("/client/printIncomingBestTimes", False)
+PRINT_INCOMING_BEST_TIMES = config.CONFIG.get("/logging/printIncomingBestTimes", False)
+UDP_PORT = config.CONFIG.get("/client/udpPort", 20777)
 session_manager = f1session.F1SessionManager()
 current_best_times = {}
 pending_db_transactions = []
@@ -99,8 +93,8 @@ def udp_packet_handler_callback(packet):
     
     session_manager.dispatch_packet(packet)
 
-log("Starting UDP client...")
-udp_thread = client.UDPThread(20777, packet_decoder=f1decode.decode_packet, packet_handler=udp_packet_handler_callback)
+log("Starting UDP client on port %d..." % UDP_PORT)
+udp_thread = client.UDPThread(UDP_PORT, packet_decoder=f1decode.decode_packet, packet_handler=udp_packet_handler_callback)
 udp_thread.start()
 log("Started")
 
