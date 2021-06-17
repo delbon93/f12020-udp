@@ -416,3 +416,18 @@ class VisualTyreCompound:
     F2_MEDIUM           = 13
     F2_HARD             = 14
     F2_WET              = 15
+
+class SessionTypes:
+    UNKNOWN = 0
+    P1 = 1
+    P2 = 2
+    P3 = 3
+    SHORT_P = 4
+    Q1 = 5
+    Q2 = 6
+    Q3 = 7
+    SHORT_Q = 8
+    OSQ = 9
+    R = 10
+    R2 = 11
+    TIME_TRIAL = 12
