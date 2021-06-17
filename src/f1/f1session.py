@@ -115,10 +115,10 @@ class F1Session:
         to determine best lap times for the session, False if not
         """
 
-        if len(self.session_data) == 0: return False
-        if len(self.car_status_data) == 0: return False
-        if len(self.lap_data) == 0: return False
-        if len(self.participants_data) == 0: return False
+        if len(self.session_data.keys()) == 0: return False
+        if len(self.car_status_data.keys()) == 0: return False
+        if len(self.lap_data.keys()) == 0: return False
+        if len(self.participants_data.keys()) == 0: return False
         return True
 
     
