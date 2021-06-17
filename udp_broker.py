@@ -1,8 +1,21 @@
 import socket
 import config
+import client
+import f1decode
+import traceback
+import time
+from logging import log
+import f1structs
+import f1enums
 
-IN_PORT = 20778
 DEFAULT_PORT = 20777
+STEAM_ID = config.CONFIG.get("/broker/steamID")
+
+packet_count = 0
+
+if not STEAM_ID:
+    log("Fatal: No SteamID provided in config file(s)!")
+    exit(1)
 
 def address_to_target(address_str: str):
     if ":" in address_str:
@@ -18,32 +31,57 @@ targets = []
 target_strings = config.CONFIG.get("/broker/targets")
 
 if not target_strings:
-    print("no targets defined")
+    log("No targets defined, shutting down")
     exit(0)
 
 for t in target_strings:
     targets.append(address_to_target(t))
 
-source = config.CONFIG.get("/broker/source", "localhost:20777")
 
-in_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-in_socket.bind(address_to_target(source))
+def udp_packet_handler_callback(packet):
+    global packet_count
+    
+    packet_count += 1
+
+    if not packet["header"]["m_packetId"] in f1structs.packet_ids.keys():
+        return
+
+    if packet["header"]["m_packetId"] == f1enums.PacketIDs.PARTICIPANTS_DATA:
+        car_id = packet["header"]["m_playerCarIndex"]
+        prev_name = packet["content"]["m_participants"][car_id]["m_name"]
+        packet["content"]["m_participants"][car_id]["m_name"] = STEAM_ID
+        log("Replaced '%s' with '%s'" % (prev_name, STEAM_ID))
+
+    recoded = f1decode.encode_packet(packet)
+
+    for target in targets:
+        out_socket.sendto(recoded, target)
+
+
+
+source = address_to_target(config.CONFIG.get("/broker/source", ":20777"))
+log("Starting UDP client on port %d..." % source[1])
+udp_thread = client.UDPThread(source[1], packet_decoder=f1decode.decode_packet, packet_handler=udp_packet_handler_callback)
+udp_thread.start()
+log("Started")
 
 out_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
+log("READY")
 try:
     while True:
-        # Read UDP packet
-        data, addr = in_socket.recvfrom(4096)
-        if not data:
-            break
+        time.sleep(1.0)
+        # log("Received %d packets last second" % packet_count)
+        packet_count = 0
 
-        for target in targets:
-            out_socket.sendto(data, target)
-
+except KeyboardInterrupt:
+    log("Keyboard Interrupt: Shutting down...")
 except Exception as error:
-    print(error)
+    print("UDP Broker Error:", error)
+    traceback.print_exc()
     exit(1)
 finally:
-    in_socket.close()
+    log("Closing outgoing socket...")
     out_socket.close()
+    log("Shutting down UDP client...")
+    udp_thread.stop()
