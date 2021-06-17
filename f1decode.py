@@ -124,11 +124,54 @@ def decode_packet(bytestream):
     if toplevel_struct_type:
         packet_data, bytes_read = extract_struct(bytestream, toplevel_struct_type)
 
-    
     return {
         "header": header,
         "content": packet_data
     }
+
+
+def _encode_field_to_bytestream(field_data, datatype, bytestream):
+    if datatype.startswith("struct"):
+        _encode_struct_to_bytestream(field_data, datatype, bytestream)
+    else:
+        binary_data = struct.pack(datatypes[datatype][1], field_data)
+        bytestream += binary_data
+
+
+def _encode_struct_to_bytestream(packet, structtype, bytestream):
+    for field in eval(structtype):
+        (datatype, member_name) = field
+
+        field_data = packet[member_name]
+
+        if "*" in datatype:
+            pure_datatype = datatype.split("*")[0]
+            if pure_datatype == "char":
+                pure_datatype = "uint8"
+                field_data = field_data.encode('utf-8')
+            count = int(datatype.split("*")[1])
+            for i in range(count):
+                if datatype.startswith("char"):
+                    if i >= len(field_data):
+                        value = 0
+                    else:
+                        value = field_data[i]
+                else:
+                    value = field_data[i]
+
+                _encode_field_to_bytestream(value, pure_datatype, bytestream)
+        else:
+            _encode_field_to_bytestream(field_data, datatype, bytestream)
+
+
+def encode_packet(packet):
+    bytestream = bytearray()
+
+    _encode_struct_to_bytestream(packet["header"], "struct_PacketHeader", bytestream)
+    content_structtype = packet_ids[packet["header"]["m_packetId"]]
+    _encode_struct_to_bytestream(packet["content"], content_structtype, bytestream)
+    
+    return bytes(bytestream)
 
 
 def format_lap_time(lap_time_seconds: float) -> str:
