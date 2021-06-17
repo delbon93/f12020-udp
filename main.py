@@ -79,7 +79,7 @@ def prepare_db_transactions():
 def process_db_transactions_batch():
     global pending_db_transactions
 
-    if not db_connection or len(pending_db_transactions) == 0:
+    if len(pending_db_transactions) == 0:
         return
 
     count = len(pending_db_transactions)
@@ -88,7 +88,9 @@ def process_db_transactions_batch():
     for data_entry in pending_db_transactions:
         sql += f1database.generate_best_lap_data_sql_statement(data_entry) + "\n"
     pending_db_transactions = []
-    f1database.transaction(db_connection, sql)
+
+    if db_connection:
+        f1database.transaction(db_connection, sql)
 
 
 def udp_packet_handler_callback(packet):
@@ -115,8 +117,7 @@ try:
             if not session.has_best_lap_data():
                 continue
 
-            current_times = session.query(0, PacketIDs.LAP_DATA,
-                "content/m_lapData[+]/m_lastLapTime")
+            current_times = session.last_lap_times
             
             track_id = session.query(0, PacketIDs.SESSION_DATA,
                 "content/m_trackId")
@@ -124,11 +125,23 @@ try:
                 "content/m_sessionType")
             
             
-            for current_time in current_times:
-                player_name = current_time[0]["data"]["m_name"]
-                car_id = current_time[0]["carIndex"]
-                lap_time = current_time[1]
-                lap_time_pretty = f1decode.format_lap_time(current_time[1])
+            for player_name in current_times.keys():
+
+                if player_name == "Player":
+                    continue
+
+                car_id = None
+                for p in session._players.values():
+                    if p["name"] == player_name:
+                        car_id = p["carIndex"]
+                        break
+                
+                if car_id == None:
+                    print("no car id for", player_name, ": ", session._players)
+                    continue
+
+                lap_time = current_times[player_name]
+                lap_time_pretty = f1decode.format_lap_time(lap_time)
                 team_id = session.query(car_id, PacketIDs.PARTICIPANTS_DATA,
                     "content/m_participants[@]/m_teamId")
                 tyre_id = session.query(car_id, PacketIDs.CAR_STATUS_DATA,
@@ -143,7 +156,7 @@ try:
         
         if len(current_best_times.keys()) > 0:
             prepare_db_transactions()
-        if len(pending_db_transactions) > 0:
+        if len(pending_db_transactions) > 0 and db_connection:
             log("Processing %d pending database transaction(s)..." % len(pending_db_transactions))
             process_db_transactions_batch()
             log("Database transactions committed")
@@ -158,6 +171,7 @@ except Exception as err:
 finally:
     log("Shutting down UDP client...")
     udp_thread.stop()
-    log("Disconnecting from database...")
-    f1database.disconnect(db_connection)
-    log("Disconnected")
+    if db_connection:
+        log("Disconnecting from database...")
+        f1database.disconnect(db_connection)
+        log("Disconnected")

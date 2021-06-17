@@ -81,6 +81,7 @@ class F1Session:
         self.session_uid = None
         self.total_packets_reveived = 0
         self._players = {}
+        self.last_lap_times = {}
 
 
     def is_in_lobby(self) -> bool:
@@ -140,6 +141,22 @@ class F1Session:
         
         return active_players
 
+
+    def _check_for_last_lap_time(self, packet):
+        player_car_id = packet["header"]["m_playerCarIndex"]
+        player = None
+        for p in self._players.values():
+            if p["carIndex"] == player_car_id:
+                player = p
+                break
+        
+        if not player or not self.has_best_lap_data():
+            return
+        
+        last_lap_time = packet["content"]["m_lapData"][player_car_id]["m_lastLapTime"]
+        player_name = player["name"]
+        self.last_lap_times[player_name] = last_lap_time
+
     
     def receive_packet(self, packet) -> None:
         """
@@ -162,14 +179,19 @@ class F1Session:
         # Store the packet in the right place
         self._id_to_packet_list[packet_id][player_car_id] = packet
 
+        if packet["header"]["m_packetId"] == PacketIDs.LAP_DATA:
+            self._check_for_last_lap_time(packet)
+
         # If the packet is a PARTICIPANTS_DATA packet, extract information about players
         if packet["header"]["m_packetId"] == PacketIDs.PARTICIPANTS_DATA:
             player_car_id = packet["header"]["m_playerCarIndex"]
             player_data = packet["content"]["m_participants"]
             player_driver_id = player_data[player_car_id]["m_driverId"]
+            player_name = player_data[player_car_id]["m_name"]
             self._players[player_driver_id] = {
                 "data": player_data[player_car_id],
                 "carIndex": player_car_id,
+                "name": player_name,
             }
         
         self.total_packets_reveived += 1
