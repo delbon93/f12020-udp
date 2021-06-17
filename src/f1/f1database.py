@@ -1,5 +1,5 @@
 import config
-import psycopg2 as dbwrapper
+import psycopg2
 
 BEST_LAP_STATEMENT_TEMPLATE = """
 INSERT INTO best_lap_times (player, trackid, sessiontypeid, teamid, tireid, time) 
@@ -13,16 +13,16 @@ def connect():
     connection object on success
     """
 
-    host = config.config.get("/db/connect/host", "localhost")
-    dbname = config.config.get("/db/connect/dbname")
+    host = config.CONFIG.get("/db/connect/host", "localhost")
+    dbname = config.CONFIG.get("/db/connect/dbname")
     if not dbname:
         raise ConnectionError("Can't connect to database: no database name defined!")
-    username = config.config.get("/db/connect/user")
+    username = config.CONFIG.get("/db/connect/user")
     if not username:
         raise ConnectionError("Can't connect to database: no user name defined!")
-    password = config.config.get("/db/connect/password", "")
+    password = config.CONFIG.get("/db/connect/password", "")
 
-    conn = dbwrapper.connect(
+    conn = psycopg2.connect(
         host=host,
         database=dbname,
         user=username,
@@ -44,16 +44,12 @@ def transaction(db_connection, sql: str):
     Executes a sql transaction on the database and returns query results
     """
 
-    data = None
     try:
         cursor = db_connection.cursor()
 
         cursor.execute(sql)
 
-        data = cursor.fetchall()
-
         db_connection.commit()
-        print("committed")
     except Exception as err:
         print(err)
         db_connection.rollback()
@@ -61,9 +57,6 @@ def transaction(db_connection, sql: str):
         if cursor:
             cursor.close()
 
-    return data
 
-
-def generate_best_lap_data_sql_statement(name: str, track_id: int, session_type: int,
-        team_id: int, tyre_id: int, lap_time: float) -> str:
-    return BEST_LAP_STATEMENT_TEMPLATE % (name, track_id, session_type, team_id, tyre_id, lap_time)
+def generate_best_lap_data_sql_statement(data: tuple) -> str:
+    return BEST_LAP_STATEMENT_TEMPLATE % data
