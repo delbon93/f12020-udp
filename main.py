@@ -17,9 +17,14 @@ UDP_PORT = config.CONFIG.get("/client/udpPort", 20777)
 session_manager = f1session.F1SessionManager()
 current_best_times = {}
 pending_db_transactions = []
-log("Connecting to database...")
-db_connection = f1database.connect()
-log("Connected")
+
+db_connection = None
+if not config.CONFIG.get("/db/offline", False):
+    log("Connecting to database...")
+    db_connection = f1database.connect()
+    log("Connected")
+else:
+    log("Connection to database skipped (offline mode)")
 
 
 def register_best_time(session_uid, player_name, last_time, data):
@@ -74,7 +79,7 @@ def prepare_db_transactions():
 def process_db_transactions_batch():
     global pending_db_transactions
 
-    if len(pending_db_transactions) == 0:
+    if not db_connection or len(pending_db_transactions) == 0:
         return
 
     count = len(pending_db_transactions)

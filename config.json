@@ -21,6 +21,7 @@
         ]
     },
     "db": {
+        "offline": true,
         "connect": {
             "host": "",
             "dbname": "",
