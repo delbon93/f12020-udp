@@ -35,7 +35,7 @@ class UDPThread:
 
 
     def _run(self, port):
-        self._socket.bind(("localhost", port))
+        self._socket.bind(("", port))
 
         while not self._should_end:
             try:
