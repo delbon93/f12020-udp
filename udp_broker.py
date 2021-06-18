@@ -58,7 +58,6 @@ def udp_packet_handler_callback(packet):
         out_socket.sendto(recoded, target)
 
 
-
 source = address_to_target(config.CONFIG.get("/broker/source", ":20777"))
 log("Starting UDP client on port %d..." % source[1])
 udp_thread = client.UDPThread(source[1], packet_decoder=f1decode.decode_packet, packet_handler=udp_packet_handler_callback)
